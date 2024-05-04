@@ -1,8 +1,15 @@
 const express = require('express');
 const sql = require('mssql');
-const students = require('./data.js');
 
+console.log(typeof jsonData);
+
+// express.json() middleware'i, gelen isteklerin JSON formatındaki body'lerini otomatik olarak parse ediyor ve req.body içine yerleştiriyor.
 const server = express();
+server.use(express.json());
+
+
+// Veritabanı bağlantısını açar. Benim veritabanım "freeasphosting.net"'de bulunuyor.
+sql.connect(`Server=sql.bsite.net\\MSSQL2016;Database=mthnplt_; user id=mthnplt_;password=mete12345;TrustServerCertificate=True;`);
 
 //---------------------------
 // Bu fonksiyonda istenildiği üzere bir kişinin bir dersten birden fazla notu varsa ortalaması alınıyor ve 1 tane olarak tutuluyor. Bu sayede bir kişinin her dersten tek notu oluyor.
@@ -43,16 +50,12 @@ function calculateAverageGrade(studentsData) {
     return studentsData;
 }
 
-// Ortalama notları hesapla
-const studentsWithAverages = calculateAverageGrade(students);
-
 //---------------------------
 
 /*// Kaydettiğim verilerin kontrolü yapabilmek için 
 server.get('/',async (req, res) => {
     try {
-        // Veritabanı bağlantısını aç
-        await sql.connect(`Server=sql.bsite.net\\MSSQL2016;Database=mthnplt_; user id=mthnplt_;password=mete12345;TrustServerCertificate=True;`);
+        
         
         // Veritabanından tüm verileri al
         const result = await sql.query`SELECT * FROM zyfera2`;
@@ -71,10 +74,13 @@ server.get('/',async (req, res) => {
     }
 });*/
 
+server.use(express.json());
+
 server.post('/', async (req, res) => {
     try {
-        // Veritabanı bağlantısını açar. Benim veritabanım "freeasphosting.net"'de bulunuyor.
-        await sql.connect(`Server=sql.bsite.net\\MSSQL2016;Database=mthnplt_; user id=mthnplt_;password=mete12345;TrustServerCertificate=True;`);
+
+        const students = req.body
+        const studentsWithAverages = calculateAverageGrade(students);
         
         // İlk olarak tabloyu oluştur (eğer yoksa)
         await sql.query`IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = N'zyfera2') BEGIN CREATE TABLE zyfera2 (name VARCHAR(255), surname VARCHAR(255),stdNumber VARCHAR(255),grades NVARCHAR(MAX)) END`;
@@ -108,5 +114,3 @@ server.post('/', async (req, res) => {
 server.listen(5000, () => {
     console.log(`localhost:5000 adresine gelen istekler dinleniyor.`);
 });
-
-
