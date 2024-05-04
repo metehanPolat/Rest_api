@@ -96,7 +96,7 @@ server.post('/', async (req, res) => {
             // Veri tiplerinin kontrolü. Hatalıysa görmezden kaydetmeyecek ve kaydetmedi mesajını yazıcak.
             if (typeof item.name !== 'string' || typeof item.surname !== 'string' || typeof item.stdNumber !== 'string' || !Array.isArray(item.grades)) {
                 console.error(`Hata: Yanlış veri tipi. Öğrenci: ${JSON.stringify(item)}`);
-                continue; // Verileri kaydetmeden döngüye devam et
+                continue;
             }
 
             // Burda grades i string tipine çevirdim çünkü kullandığım veritabamın JSON veri tipi kabul etmiyor. 
