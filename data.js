@@ -2,6 +2,7 @@ module.exports= [
     {
         "name":"Metehan",
         "surname": "POLAT",
+        "stdNumber": "B012X00012",
         "grades": [
             {
                 "code": "MT101",
@@ -28,6 +29,7 @@ module.exports= [
     {
         "name":"Mehmet",
         "surname": "POLAT",
+        "stdNumber": "B012X00015",
         "grades": [
             {
                 "code": "MT102",

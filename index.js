@@ -55,7 +55,7 @@ server.get('/',async (req, res) => {
         await sql.connect(`Server=sql.bsite.net\\MSSQL2016;Database=mthnplt_; user id=mthnplt_;password=mete12345;TrustServerCertificate=True;`);
         
         // Veritabanından tüm verileri al
-        const result = await sql.query`SELECT * FROM zyfera`;
+        const result = await sql.query`SELECT * FROM zyfera2`;
 
         // grades verilerini ben string olarak tuttuğum için tekrar JSON tipine çevirdim.
         const data = result.recordset.map(item => ({
@@ -77,12 +77,25 @@ server.post('/', async (req, res) => {
         await sql.connect(`Server=sql.bsite.net\\MSSQL2016;Database=mthnplt_; user id=mthnplt_;password=mete12345;TrustServerCertificate=True;`);
         
         // İlk olarak tabloyu oluştur (eğer yoksa)
-        await sql.query`IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = N'zyfera') BEGIN CREATE TABLE zyfera (name VARCHAR(255), surname VARCHAR(255), grades NVARCHAR(MAX)) END`;
+        await sql.query`IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = N'zyfera2') BEGIN CREATE TABLE zyfera2 (name VARCHAR(255), surname VARCHAR(255),stdNumber VARCHAR(255),grades NVARCHAR(MAX)) END`;
 
-        // Tabloya veri ekliyorum. Note: JSON verisini string olarak kaydettim çünkü veritabanında JSON tipi tanımlı değil. 
-        studentsWithAverages.forEach(async (item) => {
-            await sql.query`INSERT INTO zyfera (name, surname, grades) VALUES (${item.name}, ${item.surname}, ${JSON.stringify(item.grades)})`;
-        });
+        // Bu for sayesinde eksik veri varsa veya veri tipi yanlış girilmişse kaydetmiyor onu geçiyor ve mesaj olarak kaydetmediğinin çıktısını veriyor.
+        for (const item of studentsWithAverages) {
+            // Verilerin boş olup olmadığının kontrolü. Hatalıysa görmezden kaydetmeyecek ve kaydetmedi mesajını yazıcak.
+            if (!item.name || !item.surname || !item.stdNumber || !item.grades) {
+                console.error(`Hata: Eksik veri. Öğrenci: ${JSON.stringify(item)}`);
+                continue;
+            }
+
+            // Veri tiplerinin kontrolü. Hatalıysa görmezden kaydetmeyecek ve kaydetmedi mesajını yazıcak.
+            if (typeof item.name !== 'string' || typeof item.surname !== 'string' || typeof item.stdNumber !== 'string' || !Array.isArray(item.grades)) {
+                console.error(`Hata: Yanlış veri tipi. Öğrenci: ${JSON.stringify(item)}`);
+                continue; // Verileri kaydetmeden döngüye devam et
+            }
+
+            // Burda grades i string tipine çevirdim çünkü kullandığım veritabamın JSON veri tipi kabul etmiyor. 
+            await sql.query`INSERT INTO zyfera2 (name, surname, stdNumber, grades) VALUES (${item.name}, ${item.surname}, ${item.stdNumber}, ${JSON.stringify(item.grades)})`;
+        }
 
         console.log("Veri başarıyla eklendi.");
     } catch (err) {
